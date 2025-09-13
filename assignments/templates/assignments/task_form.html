@@ -1,0 +1,183 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Update Task{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-lg-8 mx-auto text-center">
+      <h1 class="fw-bold text-primary mb-2">
+        <i class="bi bi-pencil-square me-2"></i> Update Task
+      </h1>
+      <p class="text-muted">Edit the task fields below based on your permissions.</p>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-card-text me-1 text-primary"></i> Title
+              </label>
+              {% if user.is_superuser or user.role == "admin" %}
+                {% render_field form.title class="form-control" placeholder="Enter task title" %}
+              {% else %}
+                <input type="text" class="form-control" value="{{ task.title }}" disabled>
+              {% endif %}
+              {% if form.title.errors %}
+                <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-info-circle me-1 text-primary"></i> Description
+              </label>
+              {% render_field form.description class="form-control" rows="4" placeholder="Enter task description" %}
+              {% if form.description.errors %}
+                <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Due Date -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-calendar-date me-1 text-primary"></i> Due Date
+              </label>
+              {% if user.is_superuser or user.role == "admin" %}
+                {% render_field form.due_date class="form-control" %}
+              {% else %}
+                <input type="text" class="form-control" value="{{ task.due_date|date:'Y-m-d' }}" disabled>
+              {% endif %}
+              {% if form.due_date.errors %}
+                <div class="text-danger small mt-1">{{ form.due_date.errors }}</div>
+              {% endif %}
+            </div>
+
+            {% if user.is_superuser or user.role == "admin" %}
+              <!-- Admin-only fields -->
+
+              <!-- Status -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-flag me-1 text-primary"></i> Status
+                </label>
+                {% render_field form.status class="form-select" %}
+                {% if form.status.errors %}
+                  <div class="text-danger small mt-1">{{ form.status.errors }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Assigned To -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-person-plus me-1 text-primary"></i> Assign To
+                </label>
+                {% render_field form.assigned_to class="form-select" %}
+                {% if form.assigned_to.errors %}
+                  <div class="text-danger small mt-1">{{ form.assigned_to.errors }}</div>
+                {% endif %}
+              </div>
+
+              <!-- Doubt File -->
+              {% if task.file %}
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-file-earmark-text me-1 text-primary"></i> Doubt File
+                </label>
+                <div>
+                  <a href="{% url 'task_file_download' task.pk %}" class="btn btn-outline-primary btn-sm" target="_blank">
+                    <i class="bi bi-download me-1"></i> Download File
+                  </a>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Completed File Upload -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-upload me-1 text-primary"></i> Upload Completed File
+                </label>
+                {% render_field form.completed_file class="form-control" %}
+                {% if form.completed_file.errors %}
+                  <div class="text-danger small mt-1">{{ form.completed_file.errors }}</div>
+                {% endif %}
+
+                {% if task.completed_file %}
+                <div class="mt-2">
+                  <a href="{{ task.completed_file.url }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                    <i class="bi bi-download me-1"></i> Download Current File
+                  </a>
+                </div>
+                {% endif %}
+              </div>
+
+            {% else %}
+              <!-- Student View Only Fields -->
+
+              <!-- Status (Read-only) -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-flag me-1 text-primary"></i> Status
+                </label>
+                <input type="text" class="form-control" value="{{ task.get_status_display }}" disabled>
+              </div>
+
+              <!-- Assigned To (Read-only) -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-person-check me-1 text-primary"></i> Assigned To
+                </label>
+                <input type="text" class="form-control" value="{{ task.assigned_to.username }}" disabled>
+              </div>
+
+              <!-- Doubt File -->
+              {% if task.file %}
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="bi bi-file-earmark-text me-1 text-primary"></i> Doubt File
+                </label>
+                <div>
+                  <a href="{% url 'task_file_download' task.pk %}" class="btn btn-outline-primary btn-sm" target="_blank">
+                    <i class="bi bi-download me-1"></i> Download File
+                  </a>
+                </div>
+              </div>
+              {% endif %}
+            {% endif %}
+
+            <!-- Submit / Cancel Buttons -->
+            <div class="d-flex justify-content-between mt-4">
+              <a href="{% url 'task_detail' task.pk %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Cancel
+              </a>
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-check2-circle me-1"></i> Update Task
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Optional Styling -->
+<style>
+  input, select, textarea {
+    border-radius: 0.5rem !important;
+  }
+</style>
+{% endblock %}

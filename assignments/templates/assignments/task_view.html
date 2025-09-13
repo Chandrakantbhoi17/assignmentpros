@@ -1,0 +1,246 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% load assignment_filters %}
+
+{% block title %}Task Detail{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Page Header -->
+  <div class="row mb-4">
+    <div class="col-lg-8 mx-auto text-center">
+      <h1 class="fw-bold text-primary mb-2">
+        <i class="bi bi-clipboard2-check me-2"></i> Task Detail
+      </h1>
+      <p class="text-muted">Here’s a full overview of the selected task.</p>
+    </div>
+  </div>
+
+  <!-- Task Card -->
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <!-- Card Header -->
+        <div class="card-header bg-gradient text-white d-flex justify-content-between align-items-center"
+             style="background: linear-gradient(90deg, #0d6efd, #0dcaf0);">
+          <h4 class="mb-0"><i class="bi bi-journal-text me-2"></i>{{ task.title }}</h4>
+          <span class="badge fs-6 px-3 py-2
+            {% if task.status == 'pending' %} bg-warning text-dark
+            {% elif task.status == 'approved' %} bg-success
+            {% elif task.status == 'rejected' %} bg-danger
+            {% else %} bg-secondary
+            {% endif %}">{{ task.get_status_display }}</span>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body p-4">
+          {% if task.description %}
+          <div class="mb-4">
+            <h6 class="text-uppercase text-muted fw-bold">
+              <i class="bi bi-info-circle me-2 text-primary"></i>Description
+            </h6>
+            <p class="fs-5">{{ task.description|linebreaksbr }}</p>
+          </div>
+          {% endif %}
+
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-3 shadow-sm h-100">
+                <strong class="text-primary"><i class="bi bi-calendar-event me-2"></i>Due Date:</strong><br>
+                <span>{{ task.due_date|date:"F j, Y" }}</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-3 shadow-sm h-100">
+                <strong class="text-primary"><i class="bi bi-clock me-2"></i>Created At:</strong><br>
+                <span>{{ task.created_at|date:"F j, Y, g:i a" }}</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-3 shadow-sm h-100">
+                <strong class="text-primary"><i class="bi bi-person-circle me-2"></i>Created By:</strong><br>
+                <span>{{ task.created_by.username }}</span>
+              </div>
+            </div>
+            {% if task.assigned_to %}
+            <div class="col-md-6">
+              <div class="p-3 bg-light rounded-3 shadow-sm h-100">
+                <strong class="text-primary"><i class="bi bi-person-check me-2"></i>Assigned To:</strong><br>
+                <span>{{ task.assigned_to.username }}</span>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if task.amount %}
+          <div class="mt-4">
+            <strong class="text-primary">Amount:</strong> ₹{{ task.amount }}
+          </div>
+          {% endif %}
+
+          {% if request.user.role == 'student' and task.amount and not task.is_paid %}
+          <div class="mt-3">
+            <h6 class="text-primary mb-3"><i class="bi bi-credit-card me-2"></i>Payment Options</h6>
+            <div class="d-flex gap-2 flex-wrap">
+              {% if not first_half_paid %}
+              <button class="btn btn-success rzp-button" data-phase="first_half">
+                <i class="bi bi-credit-card me-2"></i> Pay First Half (₹{{ task.amount|divide:2|floatformat:0 }})
+              </button>
+              {% else %}
+              <span class="btn btn-outline-success disabled">
+                <i class="bi bi-check-circle-fill me-2"></i> First Half Paid
+              </span>
+              {% endif %}
+              
+              {% if not second_half_paid %}
+              <button class="btn btn-success rzp-button" data-phase="second_half">
+                <i class="bi bi-credit-card me-2"></i> Pay Second Half (₹{{ task.amount|divide:2|floatformat:0 }})
+              </button>
+              {% else %}
+              <span class="btn btn-outline-success disabled">
+                <i class="bi bi-check-circle-fill me-2"></i> Second Half Paid
+              </span>
+              {% endif %}
+            </div>
+          </div>
+          {% elif task.is_paid %}
+          <div class="mt-3 alert alert-success d-inline-block py-2 px-4">
+            <i class="bi bi-check-circle-fill me-1"></i> Full Payment Received
+          </div>
+          {% endif %}
+
+          {% if request.user.role == 'admin' and not task.amount %}
+          <div class="mt-4">
+            <h5 class="text-danger">Set Task Amount</h5>
+            <form method="post" action="{% url 'task_detail' task.pk %}">
+              {% csrf_token %}
+              <div class="input-group mb-3" style="max-width: 300px;">
+                <span class="input-group-text">₹</span>
+                <input type="number" step="0.01" min="0" name="amount" class="form-control" placeholder="Enter amount" required>
+                <button class="btn btn-primary" type="submit">Save</button>
+              </div>
+            </form>
+          </div>
+          {% endif %}
+
+          <!-- FILES -->
+          <div class="mt-4 d-flex flex-column gap-3">
+            {% if task.file %}
+            <div>
+              <label class="fw-semibold text-primary"><i class="bi bi-file-earmark-text me-1"></i> Doubt File:</label><br>
+              <a href="{% url 'task_file_download' task.pk %}" class="btn btn-outline-primary btn-sm" target="_blank">
+                <i class="bi bi-download me-1"></i> Download Attached File
+              </a>
+            </div>
+            {% endif %}
+            {% if task.completed_file %}
+            <div>
+              <label class="fw-semibold text-success"><i class="bi bi-check2-square me-1"></i> Completed File:</label><br>
+              <a href="{% url 'task_completed_file_download' task.pk %}" class="btn btn-outline-success btn-sm" target="_blank">
+                <i class="bi bi-download me-1"></i> Download Completed File
+              </a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-light d-flex justify-content-between">
+          <a href="{% url 'task_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-2"></i> Back to Tasks
+          </a>
+          {% if request.user == task.created_by or request.user.role == "admin" %}
+          <form method="post" action="{% url 'task_delete' task.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger"
+                    onclick="return confirm('Are you sure you want to delete this task?');">
+              <i class="bi bi-trash me-1"></i> Delete
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Razorpay SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.querySelectorAll(".rzp-button").forEach(btn => {
+  btn.addEventListener("click", function(e) {
+    e.preventDefault();
+    const paymentPhase = this.getAttribute("data-phase");
+    const btn = this;
+
+    fetch("{% url 'create_razorpay_order' %}", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "task_id={{ task.pk }}&payment_phase=" + paymentPhase
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+      var options = {
+        key: data.merchant_key,
+        amount: data.amount,
+        currency: data.currency,
+        order_id: data.order_id,
+        name: "Task Payment",
+        description: `Payment for task: {{ task.title }} (${paymentPhase})`,
+        handler: function (response) {
+          // Show loading state
+          btn.disabled = true;
+          btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
+          
+          fetch("{% url 'payment_success' %}", {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({
+              payment_id: response.razorpay_payment_id,
+              order_id: response.razorpay_order_id,
+              signature: response.razorpay_signature,
+              task_id: data.task_id,
+              payment_phase: paymentPhase
+            })
+          })
+          .then(res => res.json())
+          .then(result => {
+            if (result.success) {
+              alert("Payment successful!");
+              location.reload();
+            } else {
+              alert("Payment verification failed: " + result.error);
+              btn.disabled = false;
+              btn.innerHTML = '<i class="bi bi-credit-card me-2"></i> Pay ' + (paymentPhase === 'first_half' ? 'First Half' : 'Second Half');
+            }
+          })
+          .catch(err => {
+            alert("Error verifying payment: " + err);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-credit-card me-2"></i> Pay ' + (paymentPhase === 'first_half' ? 'First Half' : 'Second Half');
+          });
+        },
+        prefill: {
+          name: "{{ request.user.username }}",
+          email: "{{ request.user.email }}"
+        },
+        theme: { color: "#0d6efd" }
+      };
+      var rzp = new Razorpay(options);
+      rzp.on("payment.failed", function (response) {
+        alert("Payment failed: " + response.error.description);
+      });
+      rzp.open();
+    })
+    .catch(err => alert("Error creating order: " + err));
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,4 @@
+Django==4.2.24
+razorpay==1.3.0
+django-widget-tweaks==1.4.12
+python-dotenv==1.0.0

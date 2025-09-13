@@ -1,0 +1,178 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Home - AssignmentPros{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="d-flex align-items-center bg-light" style="min-height: 70vh;">
+  <div class="container">
+    <div class="row align-items-center">
+      <!-- Left: Text -->
+      <div class="col-lg-6 text-center text-lg-start">
+        <h1 class="display-5 fw-bold">Assignments & Programming Help — Done Right</h1>
+        <p class="lead mt-3 mb-0">
+          We provide clear guidance and complete, working code for AI/ML, Java, Python, Web, and Mobile apps.
+        </p>
+        {% if user.is_authenticated %}
+        <div class="mt-4">
+          <p class="fw-bold">👋 Welcome back, {{ user.username }}!</p>
+                <a href="{% if request.user.role == 'student' %}
+                        {% url 'task_list' %}
+                    {% elif request.user.role == 'admin' %}
+                        {% url 'admin_dashboard' %}
+                    {% else %}
+                        {% url 'home' %}
+                    {% endif %}"
+            class="btn btn-dark rounded-pill px-4 py-2 me-3">
+            Go to Dashboard
+            </a>
+          <a href="{% url 'logout' %}" class="btn btn-outline-dark rounded-pill px-4 py-2">Logout</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Right: Illustration -->
+      <div class="col-lg-6 text-center mt-4 mt-lg-0">
+        <img src="{% static 'images/hero.png' %}"
+             alt="Programming & Assignment Help"
+             class="img-fluid" style="max-height: 420px;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services Section -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-2">Our Services</h2>
+    <p class="text-center text-muted mb-5">
+      Fast, reliable support with explanations — plus full, runnable code and clean documentation.
+    </p>
+
+    <div class="row g-4 justify-content-center">
+      <!-- AI & ML Help -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 h-100 text-center p-4 rounded-4">
+          <div class="fs-1 text-primary mb-3"><i class="bi bi-cpu"></i></div>
+          <h5 class="card-title">AI & ML Help</h5>
+          <p class="card-text mb-0">Model building, training, and deployment with clear guidance.</p>
+        </div>
+      </div>
+
+      <!-- Java Projects -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 h-100 text-center p-4 rounded-4">
+          <div class="fs-1 text-danger mb-3"><i class="bi bi-file-code"></i></div>
+          <h5 class="card-title">Java Projects</h5>
+          <p class="card-text mb-0">OOP, Spring Boot APIs, MVC apps, and assignment-ready implementations.</p>
+        </div>
+      </div>
+
+      <!-- Python -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 h-100 text-center p-4 rounded-4">
+          <div class="fs-1 text-success mb-3"><i class="bi bi-terminal"></i></div>
+          <h5 class="card-title">Python & Data</h5>
+          <p class="card-text mb-0">Django/Flask, data analysis, scripting, and automation with clean code.</p>
+        </div>
+      </div>
+
+      <!-- Web Development -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 h-100 text-center p-4 rounded-4">
+          <div class="fs-1 text-warning mb-3"><i class="bi bi-globe2"></i></div>
+          <h5 class="card-title">Web Development</h5>
+          <p class="card-text mb-0">Front-end and back-end help: responsive UIs, APIs, auth, and DB setup.</p>
+        </div>
+      </div>
+
+      <!-- Mobile Apps -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 h-100 text-center p-4 rounded-4">
+          <div class="fs-1 text-info mb-3"><i class="bi bi-phone"></i></div>
+          <h5 class="card-title">Mobile App Support</h5>
+          <p class="card-text mb-0">Android (Java/Kotlin) & cross-platform flows with working builds.</p>
+        </div>
+      </div>
+
+      <!-- Full-Code Delivery -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 h-100 text-center p-4 rounded-4">
+          <div class="fs-1 text-secondary mb-3"><i class="bi bi-check2-circle"></i></div>
+          <h5 class="card-title">Full Code & Docs</h5>
+          <p class="card-text mb-0">Complete, runnable code with comments, README, and setup steps.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- FAQ Section -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4">Frequently Asked Questions</h2>
+    <div class="accordion" id="faqAccordion">
+
+      <!-- FAQ 1 -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="faq1">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse1">
+            Do you provide full code with documentation?
+          </button>
+        </h2>
+        <div id="faqCollapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+           Yes, every assignment includes complete runnable code, comments, and README/setup steps.
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ 2 -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="faq2">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse2">
+            What subjects or languages do you cover?
+          </button>
+        </h2>
+        <div id="faqCollapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            We cover AI/ML, Java, Python, Web development, Mobile apps, and more. Ask us — we likely support it!
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ 3 -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="faq3">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse3">
+            How fast can I get my assignment done?
+          </button>
+        </h2>
+        <div id="faqCollapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            Delivery depends on complexity, but most assignments are completed within hours to a couple of days.
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ 4 -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="faq4">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse4">
+            Can I ask questions after delivery?
+          </button>
+        </h2>
+        <div id="faqCollapse4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+          <div class="accordion-body">
+            ✅ Yes! We offer doubt clearing sessions so you fully understand your work.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}
