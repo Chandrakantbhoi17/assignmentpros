@@ -145,6 +145,25 @@ class TaskDetailView(LoginRequiredMixin,DetailView):
     model = Task
     template_name = 'assignments/task_view.html'
     context_object_name = 'task'
+    
+    def get_queryset(self):
+        """Only allow users to view tasks they have access to"""
+        user = self.request.user
+        
+        # Admins can view all tasks (excluding soft-deleted)
+        if user.role == "admin":
+            return Task.objects.filter(is_deleted=False)
+        
+        # Students can only view their own created tasks
+        if user.role == "student":
+            return Task.objects.filter(
+                created_by=user,
+                is_deleted=False
+            )
+        
+        # Fallback: no tasks
+        return Task.objects.none()
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['razorpay_key_id'] = settings.RAZORPAY_KEY_ID
@@ -185,7 +204,7 @@ class TaskDetailView(LoginRequiredMixin,DetailView):
         return redirect('task_detail', pk=task.pk)
         
 
-class TaskUpdateView(UpdateView):
+class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
     form_class = TaskUpdateForm
     template_name = 'assignments/task_form.html'
@@ -199,11 +218,22 @@ class TaskUpdateView(UpdateView):
     def get_queryset(self):
         user = self.request.user
         if user.is_superuser or getattr(user, 'role', '') == 'admin':
-            return Task.objects.all()
-        return Task.objects.filter(created_by=user) | Task.objects.filter(assigned_to=user)
+            return Task.objects.filter(is_deleted=False)
+        return Task.objects.filter(created_by=user, is_deleted=False) | Task.objects.filter(assigned_to=user, is_deleted=False)
+    
     def get_success_url(self):
-        # Option 1: Redirect to task detail page
+        # Redirect to task detail page
         return reverse('task_detail', kwargs={'pk': self.object.pk})
+    
+    def form_valid(self, form):
+        # Add success message
+        messages.success(self.request, f'Task "{form.instance.title}" has been updated successfully.')
+        return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        # Add error message
+        messages.error(self.request, 'There was an error updating the task. Please check the form.')
+        return super().form_invalid(form)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

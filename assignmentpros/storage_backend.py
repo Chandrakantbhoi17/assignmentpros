@@ -1,21 +1,14 @@
 import os
 import uuid
-import platform
+from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
+
 def task_file_upload_path(instance, filename):
-    ext = filename.split('.')[-1]
-    new_filename = f"{uuid.uuid4()}.{ext}"
-    return new_filename
+    ext = os.path.splitext(filename)[-1].lower()
+    new_filename = f"{uuid.uuid4()}{ext}"
+    return f"tasks/{new_filename}"  # Optional: use task ID if available
 
-# Detect OS and set base path
-if platform.system() == "Windows":
-    base_path = r"C:/assignmentpros/protected/task_files"
-else:  # Linux / macOS (Ubuntu, etc.)
-    base_path = "/home/ubuntu/assignmentpros/protected/task_files"
 
-# Create the directory if it does not exist
-os.makedirs(base_path, exist_ok=True)
+protected_storage = FileSystemStorage(location=settings.PROTECTED_MEDIA_ROOT)
 
-# Protected storage
-protected_storage = FileSystemStorage(location=base_path)

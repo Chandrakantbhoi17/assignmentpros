@@ -19,7 +19,7 @@ urlpatterns = [
     path('cancellation-refunds/', CancellationRefundsView.as_view(), name='cancellation-refunds'),
 
     # ✅ Razorpay-related paths
-    path('/create-razorpay-order/', RazorpayOrderCreateView.as_view(), name='razorpay_order_create'),
+    path('create-razorpay-order', RazorpayOrderCreateView.as_view(), name='razorpay_order_create'),
     path("verify-razorpay-payment/", RazorpayPaymentVerificationView.as_view(), name="payment_success"),
 
 ]

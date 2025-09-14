@@ -129,6 +129,17 @@ STATIC_ROOT = BASE_DIR / "staticfiles"    # for collectstatic in production
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Base directory of your project (usually already defined)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Define the path where protected task files will be stored inside the container
+PROTECTED_MEDIA_ROOT = os.getenv(
+    "PROTECTED_MEDIA_ROOT",
+    os.path.join(BASE_DIR, "protected", "task_files")
+)
+
+# Ensure the directory exists (create it if missing)
+os.makedirs(PROTECTED_MEDIA_ROOT, exist_ok=True)
 # -------------------------
 # Razorpay Settings
 # -------------------------
@@ -139,3 +150,4 @@ RAZORPAY_SECRET_KEY = os.getenv("RAZORPAY_SECRET_KEY", "")
 # Default Primary Key
 # -------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
